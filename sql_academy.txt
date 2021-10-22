@@ -1,0 +1,309 @@
+Задание 1
+Вывести имена всех когда-либо обслуживаемых пассажиров авиакомпаний
+
+select name from passenger
+
+Задание 2
+Вывести названия всеx авиакомпаний
+
+select name from company
+
+Задание 3
+Вывести все рейсы, совершенные из Москвы
+
+select * from Trip
+where town_from = 'Moscow'
+
+Задание 4
+Вывести имена людей, которые заканчиваются на "man"
+
+select name from Passenger
+where name like '%man'
+
+Задание 5
+Вывести количество рейсов, совершенных на TU-134
+
+select count(plane) as count from Trip
+where plane = 'TU-134'
+
+задание 6
+Какие компании совершали перелеты на Boeing
+
+select distinct name from company
+join trip on company.id = trip.company
+where plane = 'Boeing'
+
+Задание 7
+Вывести все названия самолётов, на которых можно улететь в Москву (Moscow)
+
+select distinct plane from Trip
+where town_to = 'Moscow'
+
+Задание 8
+В какие города можно улететь из Парижа (Paris) и сколько времени это займёт?
+
+SELECT town_to, timediff(time_in, time_out) AS flight_time
+FROM trip JOIN company ON trip.company = company.id
+WHERE trip.town_from = 'Paris';
+
+Задание 9
+Какие компании организуют перелеты с Владивостока (Vladivostok)?
+
+select name from company join trip on company.id = trip.company
+where town_from = 'Vladivostok'
+
+Задание 10
+Вывести вылеты, совершенные с 10 ч. по 14 ч. 1 января 1900 г.
+
+select * from Trip
+where time_out between '1900-01-01T10:00:00.000Z' and '1900-01-01T14:00:00.000Z'
+
+Задание 11
+Вывести пассажиров с самым длинным именем
+
+SELECT name
+  FROM passenger
+ WHERE LENGTH(name) =
+       (SELECT MAX (LENGTH (name)) FROM passenger)
+
+Задание 12
+Вывести id и количество пассажиров для всех прошедших полётов
+
+select trip, count(id) as count from Pass_in_trip
+group by trip
+
+Задание 13
+Вывести имена людей, у которых есть полный тёзка среди пассажиров
+
+select name from passenger group by name
+having count(*)>1
+
+Задание 14(объединение трех таблиц)
+В какие города летал Bruce Willis
+
+SELECT town_to FROM trip
+JOIN pass_in_trip ON trip.id = pass_in_trip.trip
+JOIN passenger ON pass_in_trip.passenger = passenger.id
+WHERE passenger.name='Bruce Willis'
+
+Задание 15
+Во сколько Стив Мартин (Steve Martin) прилетел в Лондон (London)
+
+select time_in from trip
+join Pass_in_trip on trip.id = Pass_in_trip.trip
+join passenger on Pass_in_trip.passenger = Passenger.id
+where name = 'Steve Martin' and town_to = 'London'
+
+Задание 16
+Вывести отсортированный по количеству перелетов (по убыванию) и имени (по возрастанию) список пассажиров, совершивших хотя бы 1 полет.
+
+select name, count(trip) as count from passenger
+join pass_in_trip on passenger.id = pass_in_trip.passenger
+join trip on pass_in_trip.trip = trip.id
+group by name
+having count(*) >= 1
+order by count desc, name ASC
+
+Задание 17
+Определить, сколько потратил в 2005 году каждый из членов семьи
+
+select member_name, status, sum(unit_price*amount) as costs from familymembers
+join payments on familymembers.member_id = payments.family_member
+where date between '2005-01-01T00:00:00.000Z' and '2005-12-31T23:59:59.000Z'
+group by member_name, status
+order by costs asc
+
+Задание 19
+Определить, кто из членов семьи покупал картошку (potato)
+
+select distinct status from familymembers
+join payments on familymembers.member_id = payments.family_member
+join goods on payments.good = goods.good_id
+where good_name = 'potato'
+
+Задание 20
+Сколько и кто из семьи потратил на развлечения (entertainment). Вывести статус в семье, имя, сумму
+
+select status, member_name, sum(unit_price*amount) as costs from familymembers
+join payments on familymembers.member_id = payments.family_member
+join goods on payments.good = goods.good_id
+join goodtypes on goods.type = goodtypes.good_type_id
+where good_type_name = 'entertainment'
+group by status, member_name
+
+Задание 21
+Определить товары, которые покупали более 1 раза
+
+select good_name from goods join payments on goods.good_id = payments.good
+group by good_name
+having count(*) > 1
+
+Задание 22
+Найти имена всех матерей (mother)
+
+select member_name from FamilyMembers
+where status = 'mother'
+
+Задание 23
+Найдите самый дорогой деликатес (delicacies) и выведите его стоимость
+
+select good_name,unit_price from goods
+join goodtypes on goods.type = goodtypes.good_type_id
+join payments on goods.good_id = payments.good
+where unit_price = (select max(unit_price) from payments
+join goods on payments.good = goods.good_id
+join goodtypes on goods.type = goodtypes.good_type_id
+where good_type_name = 'delicacies' )
+
+Задание 24
+Определить кто и сколько потратил в июне 2005
+
+select member_name, sum(unit_price*amount) as costs from familymembers
+join payments on familymembers.member_id = payments.family_member
+join goods on payments.good = goods.good_id
+join goodtypes on goods.type = goodtypes.good_type_id
+where date between '2005-06-01T00:00:00.000Z' and '2005-06-30T23:59:59.000Z'
+group by member_name
+
+Задание 25
+Определить, какие товары имеются в таблице Goods, но не покупались в течение 2005 года
+
+SELECT good_name
+FROM Goods
+WHERE good_id not in
+(SELECT good from Payments WHERE YEAR(date) = 2005);
+
+Задание 26
+Определить группы товаров, которые не приобретались в 2005 году
+
+SELECT good_type_name
+FROM GoodTypes
+WHERE good_type_id NOT IN (
+SELECT good_type_id
+FROM Goods
+JOIN Payments ON good_id = good AND YEAR(date) = 2005
+JOIN GoodTypes ON good_type_id = type
+)
+
+Задание 27
+Узнать, сколько потрачено на каждую из групп товаров в 2005 году. Вывести название группы и сумму
+
+select good_type_name, sum(unit_price*amount) as costs from goodtypes
+join goods on goodtypes.good_type_id = goods.type
+join payments on goods.good_id = payments.good
+where date BETWEEN "2005-01-01T00:00:00.000Z" AND "2005-12-31T00:00:00.000Z"
+group by good_type_name
+
+Задание 28
+Сколько рейсов совершили авиакомпании с Ростова (Rostov) в Москву (Moscow) ?
+
+select count(plane) as count from Trip
+where town_from = 'Rostov' and town_to = 'Moscow'
+
+Задание 29
+Выведите имена пассажиров улетевших в Москву (Moscow) на самолете TU-134
+
+select distinct name from passenger
+join pass_in_trip on passenger.id = pass_in_trip.passenger
+join trip on pass_in_trip.trip = trip.id
+where plane = 'TU-134' and town_to = 'Moscow'
+order by name asc
+
+Задание 30
+Выведите нагруженность (число пассажиров) каждого рейса (trip). Результат вывести в отсортированном виде по убыванию нагруженности.
+
+select distinct trip, count(passenger) as count from pass_in_trip
+group by trip
+order by count desc
+
+Задание 31
+Вывести всех членов семьи с фамилией Quincey.
+
+select * from FamilyMembers
+where member_name like '%_Quincey'
+
+Задание 34
+Сколько всего 10-ых классов
+
+select count(name) as count from Class
+where name like '10%'
+
+Задание 35
+Сколько различных кабинетов школы использовались 2.09.2019 в образовательных целях ?
+
+select distinct count(classroom) as count from Schedule
+where date = '2019-09-02T00:00:00.000Z'
+
+Задание 36
+Выведите информацию об обучающихся живущих на улице Пушкина (ul. Pushkina)?
+
+select * from Student
+where address like 'ul. Pushkina, %'
+
+Задание 38
+Сколько Анн (Anna) учится в школе ?
+
+select count(first_name) as count from Student
+where first_name = 'Anna'
+
+Задание 39
+Сколько обучающихся в 10 B классе ?
+
+select count(student) as count from student_in_class
+join class on student_in_class.class = class.id
+where class.id = 6
+
+Задание 40
+Выведите название предметов, которые преподает Ромашкин П.П. (Romashkin P.P.) ?
+
+select name as subjects from subject
+join schedule on subject.id = schedule.subject
+join teacher on schedule.teacher = teacher.id
+where last_name = 'Romashkin'
+
+Задания 41
+Во сколько начинается 4-ый учебный предмет по расписанию ?
+
+select start_pair from Timepair
+where id = 4
+
+Задание 43
+Выведите фамилии преподавателей, которые ведут физическую культуру (Physical Culture). Остортируйте преподавателей по фамилии.
+
+select last_name from teacher
+join schedule on teacher.id = schedule.teacher
+join subject on schedule.subject = subject.id
+where subject.name = 'Physical Culture'
+order by last_name asc
+
+Задание 46
+В каких классах введет занятия преподаватель "Krauze" ?
+
+select distinct name from class
+join schedule on class.id = schedule.class
+join teacher on schedule.teacher = teacher.id
+where last_name = 'Krauze'
+
+
+Задание 47
+Сколько занятий провел Krauze 30 августа 2019 г.?
+
+select count(number_pair) as count from schedule
+join teacher on schedule.teacher = teacher.id
+where last_name = 'Krauze' and (date between '2019-08-30T00:00:00.000Z' and '2019-08-30T23:59:59.000Z')
+
+
+Задание 48
+Выведите заполненность классов в порядке убывания
+
+select name, count(student) as count from class
+join student_in_class on class.id = student_in_class.class
+group by name
+order by count desc
+
+
+Задание 59
+Вывести пользователей,указавших Белорусский номер телефона ? Телефонный код Белоруссии +375.
+
+select * from Users
+where phone_number like '+375%'
